@@ -18,7 +18,7 @@ from shared.models import get_db, Entity
 from shared.pubsub import get_pubsub_client
 
 # Import routers
-from routers import integrations
+from .routers import integrations
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
