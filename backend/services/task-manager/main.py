@@ -137,7 +137,7 @@ async def get_tasks(
 async def startup_event():
     """Initialize service on startup"""
     logger.info("Task Manager service starting up...")
-    await pubsub.initialize()
+    # Pub/Sub will be initialized on first use (lazy loading)
     logger.info("Task Manager service ready")
 
 

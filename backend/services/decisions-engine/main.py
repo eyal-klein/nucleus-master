@@ -110,7 +110,7 @@ async def make_decision(
 async def startup_event():
     """Initialize service on startup"""
     logger.info("Decisions Engine service starting up...")
-    await pubsub.initialize()
+    # Pub/Sub will be initialized on first use (lazy loading)
     logger.info("Decisions Engine service ready")
 
 

@@ -170,7 +170,7 @@ async def delete_agent(
 async def startup_event():
     """Initialize service on startup"""
     logger.info("Agent Evolution service starting up...")
-    await pubsub.initialize()
+    # Pub/Sub will be initialized on first use (lazy loading)
     logger.info("Agent Evolution service ready")
 
 
