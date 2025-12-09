@@ -5,6 +5,7 @@ Endpoints for managing third-party service integrations
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 from pydantic import BaseModel
@@ -399,4 +400,94 @@ async def trigger_sync(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to trigger sync: {str(e)}"
+        )
+
+
+
+@router.get("/debug/schema-info", response_model=Dict[str, Any])
+async def get_schema_info(db: Session = Depends(get_db)):
+    """
+    Debug endpoint to check database schema state.
+    
+    Returns information about:
+    - Entity tables existence
+    - Migration history
+    - Schema search path
+    - Entity count
+    """
+    try:
+        # Check if entity tables exist
+        result = db.execute(text("""
+            SELECT table_schema, table_name 
+            FROM information_schema.tables 
+            WHERE table_name LIKE '%entity%'
+            ORDER BY table_schema, table_name;
+        """))
+        tables = [{"schema": row[0], "table": row[1]} for row in result]
+        
+        # Check migrations
+        migrations_result = db.execute(text("""
+            SELECT migration_name, applied_at 
+            FROM public.migrations 
+            ORDER BY applied_at;
+        """))
+        migration_list = [{"name": row[0], "applied_at": str(row[1])} for row in migrations_result]
+        
+        # Check search path
+        search_path_result = db.execute(text("SHOW search_path;"))
+        search_path = search_path_result.scalar()
+        
+        # Try to count entities in dna.entity
+        entity_count = None
+        entity_error = None
+        try:
+            count_result = db.execute(text("SELECT COUNT(*) FROM dna.entity;"))
+            entity_count = count_result.scalar()
+        except Exception as e:
+            entity_error = str(e)
+        
+        # Try to get sample entities
+        sample_entities = []
+        try:
+            sample_result = db.execute(text("SELECT id, name, created_at FROM dna.entity LIMIT 5;"))
+            sample_entities = [
+                {"id": str(row[0]), "name": row[1], "created_at": str(row[2])} 
+                for row in sample_result
+            ]
+        except Exception as e:
+            sample_entities = [{"error": str(e)}]
+        
+        # Check entity_integrations table
+        integrations_count = None
+        integrations_error = None
+        try:
+            int_count_result = db.execute(text("SELECT COUNT(*) FROM dna.entity_integrations;"))
+            integrations_count = int_count_result.scalar()
+        except Exception as e:
+            integrations_error = str(e)
+        
+        return {
+            "status": "success",
+            "database": {
+                "search_path": search_path,
+                "tables_with_entity": tables,
+                "migrations_applied": migration_list
+            },
+            "dna_entity": {
+                "count": entity_count,
+                "error": entity_error,
+                "sample_entities": sample_entities
+            },
+            "entity_integrations": {
+                "count": integrations_count,
+                "error": integrations_error
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Debug endpoint failed: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Debug endpoint failed: {str(e)}"
         )
