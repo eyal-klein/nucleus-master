@@ -20,11 +20,11 @@ These services are the real-time, event-driven core of the system. They are alwa
 
 | Service Name | Engine(s) Hosted | Trigger | Justification |
 | :--- | :--- | :--- | :--- |
-| `nucleus-orchestrator` | Orchestrator | NATS | Always-on to coordinate all engines. |
+| `nucleus-orchestrator` | Orchestrator | Pub/Sub | Always-on to coordinate all engines. |
 | `nucleus-task-manager` | Task Manager | HTTP | Immediate response to user requests. |
-| `nucleus-results-analysis` | Results Analysis | NATS | Real-time analysis of task outcomes. |
-| `nucleus-decisions-engine` | Decisions Engine | HTTP/NATS | Immediate autonomous decisions. |
-| `nucleus-agent-evolution` | Agent Evolution | NATS | Real-time agent creation and modification. |
+| `nucleus-results-analysis` | Results Analysis | Pub/Sub | Real-time analysis of task outcomes. |
+| `nucleus-decisions-engine` | Decisions Engine | HTTP/Pub/Sub | Immediate autonomous decisions. |
+| `nucleus-agent-evolution` | Agent Evolution | Pub/Sub | Real-time agent creation and modification. |
 
 ### 2.2. On-Demand Jobs (8 Engine Jobs)
 
@@ -32,14 +32,14 @@ These are heavy, analytical, or periodic tasks executed as serverless jobs. They
 
 | Job Name | Engine Hosted | Trigger | Justification |
 | :--- | :--- | :--- | :--- |
-| `dna-engine-job` | DNA Engine | Cloud Scheduler (Daily) / NATS | Heavy analysis, not needed in real-time. |
-| `first-interpretation-job` | First Interpretation | NATS (on `dna_updated`) | Discrete, one-off task. |
-| `second-interpretation-job`| Second Interpretation | NATS (on `feedback_received`) | Discrete, one-off task. |
-| `micro-prompts-job` | Micro-Prompts Engine | NATS (on `prompt_refined`) | Discrete, one-off task. |
+| `dna-engine-job` | DNA Engine | Cloud Scheduler (Daily) / Pub/Sub | Heavy analysis, not needed in real-time. |
+| `first-interpretation-job` | First Interpretation | Pub/Sub (on `dna_updated`) | Discrete, one-off task. |
+| `second-interpretation-job`| Second Interpretation | Pub/Sub (on `feedback_received`) | Discrete, one-off task. |
+| `micro-prompts-job` | Micro-Prompts Engine | Pub/Sub (on `prompt_refined`) | Discrete, one-off task. |
 | `med-to-deep-job` | MED-to-DEEP Engine | Cloud Scheduler (Nightly) | Perfect for a scheduled batch job. |
-| `activation-job` | Activation Engine | NATS (on `agent_validated`) | Discrete deployment process. |
-| `qa-job` | QA Engine | NATS (on `agent_created`) | Discrete testing process. |
-| `research-job` | Research Engine | NATS / HTTP | Long-running, resource-intensive task. |
+| `activation-job` | Activation Engine | Pub/Sub (on `agent_validated`) | Discrete deployment process. |
+| `qa-job` | QA Engine | Pub/Sub (on `agent_created`) | Discrete testing process. |
+| `research-job` | Research Engine | Pub/Sub / HTTP | Long-running, resource-intensive task. |
 
 ### 2.3. Supporting Services
 

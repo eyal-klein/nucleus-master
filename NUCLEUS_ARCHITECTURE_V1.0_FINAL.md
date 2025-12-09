@@ -53,7 +53,7 @@ The V1.0 architecture is an **event-driven, multi-agent system** built on a mode
 - **Python-First:** The entire backend is built in Python to leverage the rich AI/ML ecosystem.
 - **ADK-Powered:** Utilizes Google's Agent Development Kit (ADK) for native Google Cloud integration and robust agent management.
 - **Hybrid Tooling:** Combines the power of ADK with the vast tool ecosystem of LangChain.
-- **Event-Driven:** Decoupled services communicate via a NATS message bus for scalability and resilience.
+- **Event-Driven:** Decoupled services communicate via a Pub/Sub message bus for scalability and resilience.
 - **Observability by Design:** Full-stack monitoring and structured logging are integrated from the ground up.
 - **Evolutionary Core:** The system is designed to self-improve through a dedicated evolutionary loop.
 
@@ -72,7 +72,7 @@ This stack is adopted directly from the battle-tested NUCLEUS-ATLAS project.
 | **Tooling Framework** | LangChain | 0.3.0+ | Format for defining agent tools (`@tool`) |
 | **AI Orchestration** | LangGraph | 0.2.0+ | State machine for complex AI workflows |
 | **LLM Gateway** | LiteLLM | 1.55+ | Manages 11+ LLMs (Gemini, Claude, GPT) |
-| **Message Bus** | NATS JetStream | 2.10 | Asynchronous event-driven communication |
+| **Message Bus** | Google Cloud Pub/Sub | 2.10 | Asynchronous event-driven communication |
 | **Database ORM** | SQLAlchemy | 2.0+ | Core data models and migrations |
 | **DB Driver** | asyncpg | 0.29.0 | High-speed async PostgreSQL driver |
 
@@ -124,7 +124,7 @@ This is the central nervous system of the entire architecture. It's a long-runni
 This is a set of interconnected components (inspired by `nucleus_core` from ATLAS) that implement "The Pulse".
 
 - **Assembly Vault (PostgreSQL DB):** The central repository for all agents and tools. It stores their definitions, versions, and performance metrics.
-- **Results Analysis Engine:** A service that subscribes to `task_completed` events from the NATS bus. It analyzes the outcome of every action, comparing the result to the original intent and evaluating its impact on the three Super-Interests.
+- **Results Analysis Engine:** A service that subscribes to `task_completed` events from the Pub/Sub bus. It analyzes the outcome of every action, comparing the result to the original intent and evaluating its impact on the three Super-Interests.
 - **Agent Evolution Engine:** A service that subscribes to `analysis_completed` events. Based on the analysis, this engine makes decisions about the agent population: 
     - **Create:** If a new capability is needed, it can generate a new agent/tool.
     - **Modify:** If an agent is underperforming, it can modify its prompt or tools.
@@ -307,9 +307,9 @@ This is the fundamental difference between NUCLEUS and any other AI system:
 ### Phase 3: The Evolutionary Loop (Sprint 5-6)
 
 1.  **Build Assembly Vault:** Create the database tables for the `assembly` schema.
-2.  **Develop Results Analysis Engine:** Create a new Cloud Run service that listens to NATS and performs basic outcome analysis.
+2.  **Develop Results Analysis Engine:** Create a new Cloud Run service that listens to Pub/Sub and performs basic outcome analysis.
 3.  **Develop Agent Evolution Engine:** Create a Cloud Run service that can perform a simple action, like updating an agent's prompt in the `assembly` database.
-4.  **Integrate the Loop:** Ensure a task completion event flows through NATS to the analysis and evolution engines.
+4.  **Integrate the Loop:** Ensure a task completion event flows through Pub/Sub to the analysis and evolution engines.
 
 ### Phase 4: Deepening & Expression (Sprint 7+)
 
