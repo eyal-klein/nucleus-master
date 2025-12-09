@@ -1,0 +1,82 @@
+name: Deploy Cloud Run Services
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/services/**'
+      - 'backend/shared/**'
+  workflow_dispatch:
+
+env:
+  GCP_PROJECT_ID: 'thrive-system1'
+  GCP_REGION: 'us-central1'
+  REGISTRY: 'gcr.io'
+
+jobs:
+  deploy-services:
+    name: 'Build and Deploy Services'
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        service:
+          - orchestrator
+          - task-manager
+          - results-analysis
+          - decisions-engine
+          - agent-evolution
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+      
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker
+      
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ${{ env.REGISTRY }}/${{ env.GCP_PROJECT_ID }}/nucleus-${{ matrix.service }}:${{ github.sha }} \
+            -t ${{ env.REGISTRY }}/${{ env.GCP_PROJECT_ID }}/nucleus-${{ matrix.service }}:latest \
+            -f backend/services/${{ matrix.service }}/Dockerfile \
+            .
+      
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.REGISTRY }}/${{ env.GCP_PROJECT_ID }}/nucleus-${{ matrix.service }}:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/${{ env.GCP_PROJECT_ID }}/nucleus-${{ matrix.service }}:latest
+      
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy nucleus-${{ matrix.service }} \
+            --image=${{ env.REGISTRY }}/${{ env.GCP_PROJECT_ID }}/nucleus-${{ matrix.service }}:${{ github.sha }} \
+            --platform=managed \
+            --region=${{ env.GCP_REGION }} \
+            --allow-unauthenticated \
+            --set-env-vars="PROJECT_ID=${{ env.GCP_PROJECT_ID }}" \
+            --set-secrets="DB_PASSWORD=nucleus-db-password:latest" \
+            --add-cloudsql-instances=${{ secrets.CLOUD_SQL_CONNECTION_NAME }} \
+            --memory=2Gi \
+            --cpu=2 \
+            --timeout=300 \
+            --min-instances=0 \
+            --max-instances=10
+      
+      - name: Service URL
+        run: |
+          gcloud run services describe nucleus-${{ matrix.service }} \
+            --platform=managed \
+            --region=${{ env.GCP_REGION }} \
+            --format='value(status.url)'
