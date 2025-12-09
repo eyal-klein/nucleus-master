@@ -70,7 +70,7 @@ class MEDtoDEEPEngine:
             conversations = db.query(Conversation).filter(
                 Conversation.entity_id == uuid.UUID(entity_id),
                 Conversation.created_at < threshold_date,
-                Conversation.metadata.op('->>')('archived').is_(None)  # Not already archived
+                Conversation.meta_data.op('->>')('archived').is_(None)  # Not already archived
             ).order_by(Conversation.created_at).limit(100).all()
             
             if not conversations:
@@ -124,9 +124,9 @@ class MEDtoDEEPEngine:
                 
                 # Mark conversations as archived
                 for conv in convs:
-                    conv.metadata = conv.metadata or {}
-                    conv.metadata["archived"] = True
-                    conv.metadata["summary_id"] = str(summary.id)
+                    conv.meta_data = conv.meta_data or {}
+                    conv.meta_data["archived"] = True
+                    conv.meta_data["summary_id"] = str(summary.id)
                     db.add(conv)
                 
                 consolidated_count += len(convs)

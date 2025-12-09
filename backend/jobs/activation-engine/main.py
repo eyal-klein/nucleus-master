@@ -74,8 +74,8 @@ class ActivationEngine:
             # Update agent status
             agent.status = 'active'
             agent.activated_at = datetime.utcnow()
-            agent.metadata = agent.metadata or {}
-            agent.metadata['activation_timestamp'] = datetime.utcnow().isoformat()
+            agent.meta_data = agent.meta_data or {}
+            agent.meta_data['activation_timestamp'] = datetime.utcnow().isoformat()
             
             # Create activation record
             activation = AgentActivation(

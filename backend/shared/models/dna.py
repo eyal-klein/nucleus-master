@@ -90,7 +90,7 @@ class RawData(Base):
     entity_id = Column(UUID(as_uuid=True), ForeignKey("dna.entity.id", ondelete="CASCADE"))
     data_type = Column(String(100), nullable=False)  # conversation, document, interaction
     data_content = Column(Text, nullable=False)
-    metadata = Column(JSONB)
+    meta_data = Column(JSONB)
     ingested_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
     
     # Relationships

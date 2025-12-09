@@ -22,7 +22,7 @@ class Conversation(Base):
     session_id = Column(UUID(as_uuid=True), nullable=False)
     role = Column(String(50), nullable=False)  # user, assistant, system
     content = Column(Text, nullable=False)
-    metadata = Column(JSONB)
+    meta_data = Column(JSONB)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
 
@@ -51,5 +51,5 @@ class Embedding(Base):
     source_id = Column(UUID(as_uuid=True), nullable=False)
     content_text = Column(Text, nullable=False)
     embedding = Column(Vector(1536))  # OpenAI ada-002 dimension
-    metadata = Column(JSONB)
+    meta_data = Column(JSONB)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())

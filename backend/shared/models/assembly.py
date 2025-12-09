@@ -78,7 +78,7 @@ class AgentPerformance(Base):
     success = Column(Boolean, nullable=False)
     execution_time_ms = Column(Integer)
     feedback_score = Column(Float)
-    metadata = Column(JSONB)
+    meta_data = Column(JSONB)
     recorded_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
     
     # Relationships

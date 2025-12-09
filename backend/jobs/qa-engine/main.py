@@ -117,15 +117,15 @@ class QAEngine:
             # Update agent status
             if qa_passed:
                 agent.status = 'approved'
-                agent.metadata = agent.metadata or {}
-                agent.metadata['qa_passed_at'] = datetime.utcnow().isoformat()
-                agent.metadata['qa_pass_rate'] = pass_rate
+                agent.meta_data = agent.meta_data or {}
+                agent.meta_data['qa_passed_at'] = datetime.utcnow().isoformat()
+                agent.meta_data['qa_pass_rate'] = pass_rate
             else:
                 agent.status = 'rejected'
-                agent.metadata = agent.metadata or {}
-                agent.metadata['qa_failed_at'] = datetime.utcnow().isoformat()
-                agent.metadata['qa_pass_rate'] = pass_rate
-                agent.metadata['qa_failures'] = [r for r in test_results if not r['passed']]
+                agent.meta_data = agent.meta_data or {}
+                agent.meta_data['qa_failed_at'] = datetime.utcnow().isoformat()
+                agent.meta_data['qa_pass_rate'] = pass_rate
+                agent.meta_data['qa_failures'] = [r for r in test_results if not r['passed']]
             
             db.add(agent)
             db.commit()
@@ -214,7 +214,7 @@ Return as JSON array of scenarios.
             ]
             
             # Get agent's tools
-            agent_tools = [t for t in self.tools if t.name in (agent.metadata or {}).get('tool_names', [])]
+            agent_tools = [t for t in self.tools if t.name in (agent.meta_data or {}).get('tool_names', [])]
             
             response = await self.llm.complete(
                 messages,

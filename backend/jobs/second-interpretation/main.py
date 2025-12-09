@@ -110,7 +110,7 @@ class SecondInterpretationEngine:
     async def _generate_interpretation(self, entity: Entity, first_interp: Summary) -> Dict[str, Any]:
         """Generate tactical interpretation using LLM"""
         
-        first_data = first_interp.metadata or {}
+        first_data = first_interp.meta_data or {}
         
         prompt = f"""You are a tactical analyst for NUCLEUS. Based on the strategic interpretation, create a detailed action plan.
 

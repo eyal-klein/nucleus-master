@@ -26,7 +26,7 @@ class Task(Base):
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
     started_at = Column(TIMESTAMP(timezone=True))
     completed_at = Column(TIMESTAMP(timezone=True))
-    metadata = Column(JSONB)
+    meta_data = Column(JSONB)
 
 
 class Job(Base):
@@ -54,5 +54,5 @@ class Log(Base):
     log_level = Column(String(20), nullable=False)  # DEBUG, INFO, WARNING, ERROR
     service_name = Column(String(255), nullable=False)
     message = Column(Text, nullable=False)
-    metadata = Column(JSONB)
+    meta_data = Column(JSONB)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())

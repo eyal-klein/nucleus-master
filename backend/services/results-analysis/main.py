@@ -76,7 +76,7 @@ async def analyze_performance(
         success=analysis.success,
         execution_time_ms=analysis.execution_time_ms,
         feedback_score=analysis.feedback_score,
-        metadata=analysis.metadata
+        metadata=analysis.meta_data
     )
     
     db.add(performance)
