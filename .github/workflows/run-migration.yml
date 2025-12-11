@@ -1,0 +1,92 @@
+name: Run Database Migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      migration_name:
+        description: 'Migration file name (without .sql)'
+        required: true
+        default: '005_add_extended_dna_tables'
+        type: string
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-central1
+  JOB_NAME: nucleus-run-migration
+
+jobs:
+  run-migration:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+      
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+      
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f backend/jobs/run-migration/Dockerfile \
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:${{ github.sha }} \
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:latest \
+            .
+      
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:${{ github.sha }}
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:latest
+      
+      - name: Create or Update Cloud Run Job
+        run: |
+          gcloud run jobs update ${{ env.JOB_NAME }} \
+            --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:${{ github.sha }} \
+            --region=${{ env.REGION }} \
+            --set-env-vars="PROJECT_ID=${{ env.PROJECT_ID }},MIGRATION_NAME=${{ inputs.migration_name }}" \
+            --set-secrets="DATABASE_URL=nucleus-db-url:latest" \
+            --cpu=1 \
+            --memory=512Mi \
+            --max-retries=0 \
+            --task-timeout=300 \
+            --service-account=nucleus-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com \
+            || \
+          gcloud run jobs create ${{ env.JOB_NAME }} \
+            --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:${{ github.sha }} \
+            --region=${{ env.REGION }} \
+            --set-env-vars="PROJECT_ID=${{ env.PROJECT_ID }},MIGRATION_NAME=${{ inputs.migration_name }}" \
+            --set-secrets="DATABASE_URL=nucleus-db-url:latest" \
+            --cpu=1 \
+            --memory=512Mi \
+            --max-retries=0 \
+            --task-timeout=300 \
+            --service-account=nucleus-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com
+      
+      - name: Execute Migration Job
+        run: |
+          echo "Executing migration: ${{ inputs.migration_name }}"
+          gcloud run jobs execute ${{ env.JOB_NAME }} \
+            --region=${{ env.REGION }} \
+            --wait
+      
+      - name: Get Job Logs
+        if: always()
+        run: |
+          echo "Fetching job execution logs..."
+          gcloud logging read "resource.type=cloud_run_job AND resource.labels.job_name=${{ env.JOB_NAME }}" \
+            --limit=50 \
+            --format="table(timestamp,textPayload)" \
+            --freshness=5m
