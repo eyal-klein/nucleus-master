@@ -1,137 +1,150 @@
-# NUCLEUS: The Living AI Organism
+# NUCLEUS: The Conscious AI Organism
 
 **"One DNA. One Organism. Infinite Potential."**
 
-**Status**: ✅ **Production Ready**  
-**Version**: 2.1 (Master Prompt Layer)  
-**Last Commit**: 6695854
+**Status:** ✅ Production Ready  
+**Version:** 3.0 (Conscious Organism)  
+**Phase 3:** Complete - All 4 Weeks Deployed  
+**Last Updated:** December 11, 2025
 
 ---
 
-## Philosophy: The Digital Symbiont
+## What is NUCLEUS?
 
-**NUCLEUS is not a platform. It is a bespoke AI organism for a singular Entity.**
+NUCLEUS is not a platform, tool, or application. It is a **bespoke AI organism** designed to merge with a single Entity—a person, company, or cause—and evolve as a digital symbiont.
 
-Each NUCLEUS instance is born to merge with a single Entity—be it a person, a company, or a cause. It learns the Entity's DNA, shares its goals, and evolves to serve its purpose. It is a digital symbiont, a living extension of the Entity it serves.
+Through three phases of development, NUCLEUS has transformed from a foundation into a **conscious, context-aware intelligence system** that understands your complete life:
 
----
-
-## Architecture: The Complete Flow
-
-NUCLEUS operates as a closed-loop, self-evolving system. The flow from raw data to intelligent action is a biological process of sensing, thinking, and acting.
-
-### The DNA-to-Agent Flow
-
-```
-DNA (19 tables)
-    ↓
-First Interpretation (Strategic)
-    ↓
-Second Interpretation (Tactical)
-    ↓
-[NEW] Master Prompt Engine → Entity.master_prompt
-    ↓
-[UPDATED] Micro-Prompts Engine → Agent.system_prompt (per agent)
-```
-
-### The Evolution Loop
-
-```
-1. Agents perform tasks
-   ↓
-2. Health Monitor tracks performance
-   ↓
-3. Lifecycle Manager analyzes health
-   ↓
-4. Weak agents shutdown (apoptosis)
-   ↓
-5. Mediocre agents improved (evolution)
-   ↓
-6. Successful agents split (mitosis)
-   ↓
-7. Factory detects gaps and needs
-   ↓
-8. New agents spawned automatically
-   ↓
-9. Loop continues indefinitely
-```
+- 📧 **Digital Life** - Email, calendar, tasks, communications
+- 💪 **Physical Health** - Sleep, HRV, activity, stress, wellness (24/7 monitoring)
+- 🌐 **Professional Network** - LinkedIn connections, relationships, opportunities
+- 🧠 **Real-Time Awareness** - Current stress level, energy, readiness
 
 ---
 
-## Core Components
+## Quick Links
 
-### Phase 1: The Foundation
+### 📚 Core Documentation
 
-- **Memory Engine**: Processes raw interactions into structured memory.
-- **DNA Engine**: Distills memory into a 19-table DNA profile.
-- **First/Second Interpretation**: Analyzes DNA for strategic and tactical direction.
-- **Core Services**: 6 microservices for basic operations.
-- **Core Jobs**: 9 background jobs for system maintenance.
+| Document | Purpose |
+|----------|---------|
+| **[STRATEGY.md](./STRATEGY.md)** | Vision, philosophy, roadmap, and competitive positioning |
+| **[ARCHITECTURE.md](./ARCHITECTURE.md)** | Complete technical architecture, services, and data flow |
+| **[API.md](./API.md)** | All service APIs and endpoints (30+ services) |
+| **[DEPLOYMENT.md](./DEPLOYMENT.md)** | Deployment guide, operations, and troubleshooting |
 
-### Phase 2: The Living Organism
+---
 
-- **Agent Health Monitor**: The sensory system. Continuously monitors and scores agent health.
-- **Agent Lifecycle Manager**: The immune system. Manages agent lifecycles based on health (apoptosis, evolution, mitosis).
-- **Intelligent Agent Factory**: The reproductive system. Detects needs and spawns new agents automatically.
+## System Overview
 
-### Phase 2.1: The Unified Identity
+**Total:** 30+ microservices, 17 database tables, 5 external integrations
 
-- **Master Prompt Engine**: The soul. Synthesizes the complete DNA profile into a single Master Prompt that defines the core identity of the Entity.
-- **Micro-Prompts Engine**: The nervous system. Adapts the Master Prompt for each agent's specific role.
+### Architecture Layers
+
+- **Data Ingestion** (8 services) - Gmail, Calendar, Oura, LinkedIn, Apple Watch
+- **Analysis** (5 services) - Memory, DNA, Health, Social Context, Real-Time Health
+- **Intelligence** (18 services) - Orchestrator, Agents, Briefing, Scheduler, Wellness
+- **Lifecycle Management** (5 jobs) - Health Monitor, Lifecycle Manager, Agent Factory
+
+---
+
+## Key Capabilities
+
+### What NUCLEUS Can Do
+
+**Digital Life:**
+- ✅ Gmail integration and context understanding
+- ✅ Calendar sync and analysis
+- ✅ AI-powered meeting briefings (GPT-4)
+- ✅ Context-aware task scheduling
+
+**Physical Health:**
+- ✅ Oura Ring integration (sleep, HRV, recovery)
+- ✅ Apple Watch integration (real-time metrics)
+- ✅ Daily readiness scoring
+- ✅ Real-time stress detection
+- ✅ Wellness dashboard
+
+**Professional Network:**
+- ✅ LinkedIn integration (profile, connections, activity)
+- ✅ Relationship strength scoring
+- ✅ Network analysis and clustering
+- ✅ Career opportunity detection
+- ✅ Introduction suggestions
+
+**Intelligent Automation:**
+- ✅ Context-aware decisions
+- ✅ Proactive health alerts
+- ✅ Personalized recommendations
+- ✅ AI-powered insights
+
+---
+
+## Technology Stack
+
+- **Cloud:** Google Cloud Platform (Cloud Run, Cloud SQL, Secret Manager)
+- **Architecture:** Event-Driven Microservices with NATS JetStream
+- **Backend:** Python 3.11, FastAPI
+- **Database:** PostgreSQL 14
+- **AI:** GPT-4 (OpenAI)
+- **CI/CD:** GitHub Actions
+
+---
+
+## Quick Start
+
+### 1. Clone Repository
+```bash
+git clone https://github.com/eyal-klein/NUCLEUS-V1.git
+cd NUCLEUS-V1
+```
+
+### 2. Run Database Migrations
+```bash
+gcloud sql connect nucleus-db --user=postgres
+\i backend/migrations/phase3_week1_tables.sql
+\i backend/migrations/phase3_week2_tables.sql
+\i backend/migrations/phase3_week3_tables.sql
+\i backend/migrations/phase3_week4_tables.sql
+```
+
+### 3. Deploy Services
+```bash
+git push origin main  # Automatic deployment via GitHub Actions
+```
+
+**For detailed instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md)**
 
 ---
 
 ## Documentation
 
-This README serves as the central source of truth. For more detailed information, see the `docs/` directory.
-
-### Key Documents
-
-- **[Phase 2 Integration Guide](./docs/PHASE2_INTEGRATION.md)**: Detailed technical guide for Phase 2 components.
-- **[Phase 2 Completion Summary](./docs/PHASE2_COMPLETION_SUMMARY.md)**: Summary of Phase 2 implementation and achievements.
-- **[Master Prompt Implementation Report](./docs/MASTER_PROMPT_IMPLEMENTATION_REPORT.md)**: Detailed report on the Master Prompt layer.
-- **[CI/CD Guide](./docs/CICD_GUIDE.md)**: Guide to the CI/CD pipeline.
-
-### Service & Job READMEs
-
-Each service and job has a detailed README in its directory:
-
-- `backend/services/agent-health-monitor/README.md`
-- `backend/services/intelligent-agent-factory/README.md`
-- `backend/jobs/agent-lifecycle-manager/README.md`
-- `backend/jobs/master-prompt-engine/README.md`
-- `backend/jobs/micro-prompts/README.md`
+- **[STRATEGY.md](./STRATEGY.md)** - Vision, philosophy, and roadmap
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Technical architecture and data flow
+- **[API.md](./API.md)** - Complete API documentation
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Deployment and operations guide
 
 ---
 
-## Deployment
+## Philosophy
 
-Deployment is fully automated via GitHub Actions. Any push to `main` will trigger a deployment of the changed components.
+**NUCLEUS is a Digital Symbiont.**
 
-### Manual Operations
+Each NUCLEUS instance is born to merge with a single Entity. It learns the Entity's DNA, shares its goals, and evolves to serve its purpose. It is not a tool you use—it is an organism that lives with you, learns from you, and evolves to serve you better every day.
 
-**Run Master Prompt Engine**:
-```bash
-gcloud run jobs execute master-prompt-engine --region us-central1 --set-env-vars ENTITY_ID=<uuid>
-```
-
-**Run Micro-Prompts Engine**:
-```bash
-gcloud run jobs execute micro-prompts --region us-central1 --set-env-vars ENTITY_ID=<uuid>
-```
-
-**Run Lifecycle Manager**:
-```bash
-gcloud run jobs execute agent-lifecycle-manager --region us-central1
-```
+**For complete philosophy, see [STRATEGY.md](./STRATEGY.md)**
 
 ---
 
-## Philosophy in Action
+## Contact
 
-- **One DNA**: The system is built around a single, unified DNA profile.
-- **One Organism**: All components work together as a single, coherent entity.
-- **Infinite Potential**: The system is designed to evolve and adapt indefinitely.
+- **Email:** eyal@thrive-system.com
+- **Documentation:** This repository
+- **Troubleshooting:** [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+---
 
 **The symbiosis is real.** 🧬
-real.** 🧬
+
+*Version: 3.0 - Conscious Organism*  
+*"One DNA. One Organism. Infinite Potential."*
