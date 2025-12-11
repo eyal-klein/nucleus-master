@@ -32,16 +32,10 @@ def run_migration_file(filepath: str):
     
     # Execute migration
     try:
-        with engine.connect() as conn:
-            # Split by semicolons and execute each statement
-            statements = [s.strip() for s in migration_sql.split(';') if s.strip()]
-            
-            for i, statement in enumerate(statements, 1):
-                if statement:
-                    logger.info(f"Executing statement {i}/{len(statements)}...")
-                    conn.execute(text(statement))
-                    conn.commit()
-            
+        with engine.begin() as conn:
+            # Execute entire migration as single transaction
+            logger.info("Executing migration SQL...")
+            conn.execute(text(migration_sql))
             logger.info(f"✅ Migration completed: {filepath}")
             
     except Exception as e:
