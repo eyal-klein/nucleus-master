@@ -14,6 +14,7 @@ env:
   PROJECT_ID: thrive-system1
   REGION: us-central1
   SERVICE_NAME: event-consumer
+  CLOUD_RUN_SERVICE: ingestion-consumer
 
 jobs:
   deploy:
@@ -53,15 +54,16 @@ jobs:
       
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy ${{ env.SERVICE_NAME }} \
+          gcloud run deploy ${{ env.CLOUD_RUN_SERVICE }} \
             --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.SERVICE_NAME }}:${{ github.sha }} \
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
-            --set-env-vars NATS_URL=nats://nats-server:4222,MEMORY_ENGINE_URL=https://memory-engine-xeihvetbja-uc.a.run.app \
+            --set-env-vars NATS_URL=nats://infra-nats:4222,MEMORY_ENGINE_URL=https://analysis-memory-xeihvetbja-uc.a.run.app \
             --memory 512Mi \
             --cpu 1 \
             --min-instances 1 \
             --max-instances 5 \
             --timeout 3600 \
+            --labels project=nucleus,environment=production,managed-by=github-actions,phase=phase3,layer=ingestion,week=week1,component=processing \
             --no-cpu-throttling

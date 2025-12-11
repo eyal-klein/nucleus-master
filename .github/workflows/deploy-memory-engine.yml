@@ -54,7 +54,7 @@ jobs:
       
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy ${{ env.SERVICE_NAME }} \
+          gcloud run deploy ${{ env.CLOUD_RUN_SERVICE }} \
             --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.SERVICE_NAME }}:${{ github.sha }} \
             --region ${{ env.REGION }} \
             --platform managed \
@@ -65,6 +65,7 @@ jobs:
             --memory 512Mi \
             --cpu 1 \
             --timeout 300 \
+            --labels project=nucleus,environment=production,managed-by=github-actions,phase=phase1,layer=analysis,component=storage \
             --max-instances 10 \
             --min-instances 0
       

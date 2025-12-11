@@ -13,6 +13,7 @@ env:
   PROJECT_ID: thrive-system1
   REGION: us-central1
   SERVICE_NAME: nats-server
+  CLOUD_RUN_SERVICE: infra-nats
 
 jobs:
   deploy:
@@ -52,7 +53,7 @@ jobs:
       
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy ${{ env.SERVICE_NAME }} \
+          gcloud run deploy ${{ env.CLOUD_RUN_SERVICE }} \
             --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.SERVICE_NAME }}:${{ github.sha }} \
             --region ${{ env.REGION }} \
             --platform managed \
@@ -63,6 +64,7 @@ jobs:
             --min-instances 1 \
             --max-instances 3 \
             --timeout 3600 \
+            --labels project=nucleus,environment=production,managed-by=github-actions,phase=phase3,layer=infra,week=week1,component=messaging \
             --no-cpu-throttling
       
       - name: Get service URL
