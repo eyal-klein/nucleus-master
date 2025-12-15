@@ -29,7 +29,7 @@ jobs:
       - uses: google-github-actions/setup-gcloud@v2
       - run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
       - run: |
-          docker build -f backend/services/${{ env.SERVICE_NAME }}/Dockerfile \
+          docker build --no-cache -f backend/services/${{ env.SERVICE_NAME }}/Dockerfile \
             -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.SERVICE_NAME }}:${{ github.sha }} \
             -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.SERVICE_NAME }}:latest .
       - run: |

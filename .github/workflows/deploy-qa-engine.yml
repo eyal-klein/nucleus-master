@@ -38,7 +38,7 @@ jobs:
       
       - name: Build Docker image
         run: |
-          docker build -f backend/jobs/qa-engine/Dockerfile \
+          docker build --no-cache -f backend/jobs/qa-engine/Dockerfile \
             -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:${{ github.sha }} \
             -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:latest \
             .
