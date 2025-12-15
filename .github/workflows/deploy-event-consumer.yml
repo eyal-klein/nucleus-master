@@ -59,7 +59,7 @@ jobs:
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
-            --set-env-vars 
+            --set-env-vars "GCP_PROJECT_ID=${{ env.PROJECT_ID }},MEMORY_ENGINE_URL=https://analysis-memory-117434778973.us-central1.run.app,DNA_ENGINE_URL=https://analysis-dna-117434778973.us-central1.run.app" \
             --memory 512Mi \
             --cpu 1 \
             --min-instances 1 \
