@@ -7,7 +7,11 @@ from .dna_extended import (
     Relationship, Skill, Preference, Constraint, Belief, Experience,
     Emotion, Routine, Context, EvolutionHistory
 )
-from .memory import Conversation, Summary, Embedding, MemoryTier1, MemoryTier2, MemoryTier3, MemoryTier4, HealthMetric
+from .memory import (
+    Conversation, Summary, Embedding, 
+    MemoryTier1, MemoryTier2, MemoryTier3, MemoryTier4, 
+    HealthMetric, CalendarEvent, EmailMessage, Briefing
+)
 from .assembly import Agent, Tool, AgentTool, AgentPerformance, AgentNeed, AgentLifecycleEvent
 from .execution import Task, Job, Log
 from .integrations import EntityIntegration
@@ -51,6 +55,9 @@ __all__ = [
     "MemoryTier3",
     "MemoryTier4",
     "HealthMetric",
+    "CalendarEvent",
+    "EmailMessage",
+    "Briefing",
     # Assembly
     "Agent",
     "Tool",

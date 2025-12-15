@@ -166,3 +166,129 @@ class HealthMetric(Base):
     
     # Metadata
     meta_data = Column(JSONB, default={})
+
+
+# ============================================================================
+# Phase 4: Calendar & Email Integration
+# ============================================================================
+
+class CalendarEvent(Base):
+    """
+    Calendar events from connected calendar services.
+    Stores events from Google Calendar, Outlook, etc.
+    """
+    __tablename__ = "calendar_events"
+    __table_args__ = {"schema": "memory"}
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    entity_id = Column(UUID(as_uuid=True), ForeignKey("dna.entity.id", ondelete="CASCADE"), nullable=False)
+    
+    # Event details
+    external_id = Column(String(255), nullable=True, comment="External calendar event ID")
+    summary = Column(String(500), nullable=False)
+    description = Column(Text, nullable=True)
+    location = Column(String(500), nullable=True)
+    
+    # Temporal
+    start_time = Column(TIMESTAMP(timezone=True), nullable=False, index=True)
+    end_time = Column(TIMESTAMP(timezone=True), nullable=False)
+    all_day = Column(Integer, default=0)
+    
+    # Attendees and organizer
+    organizer = Column(String(255), nullable=True)
+    attendees = Column(JSONB, default=[])
+    
+    # Source tracking
+    source = Column(String(50), nullable=False, default="google")  # google, outlook, apple
+    calendar_id = Column(String(255), nullable=True)
+    
+    # Status
+    status = Column(String(50), default="confirmed")  # confirmed, tentative, cancelled
+    
+    # Timestamps
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Metadata
+    meta_data = Column(JSONB, default={})
+
+
+class EmailMessage(Base):
+    """
+    Email messages from connected email services.
+    Stores emails from Gmail, Outlook, etc.
+    """
+    __tablename__ = "email_messages"
+    __table_args__ = {"schema": "memory"}
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    entity_id = Column(UUID(as_uuid=True), ForeignKey("dna.entity.id", ondelete="CASCADE"), nullable=False)
+    
+    # Email identifiers
+    external_id = Column(String(255), nullable=True, comment="External email message ID")
+    thread_id = Column(String(255), nullable=True)
+    
+    # Email content
+    subject = Column(String(1000), nullable=True)
+    snippet = Column(Text, nullable=True, comment="Short preview of email content")
+    body_text = Column(Text, nullable=True)
+    body_html = Column(Text, nullable=True)
+    
+    # Sender and recipients
+    sender = Column(String(500), nullable=False)
+    recipients_to = Column(JSONB, default=[])
+    recipients_cc = Column(JSONB, default=[])
+    recipients_bcc = Column(JSONB, default=[])
+    
+    # Temporal
+    received_at = Column(TIMESTAMP(timezone=True), nullable=False, index=True)
+    sent_at = Column(TIMESTAMP(timezone=True), nullable=True)
+    
+    # Source tracking
+    source = Column(String(50), nullable=False, default="gmail")  # gmail, outlook
+    
+    # Status
+    is_read = Column(Integer, default=0)
+    is_starred = Column(Integer, default=0)
+    labels = Column(JSONB, default=[])
+    
+    # Timestamps
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    
+    # Metadata
+    meta_data = Column(JSONB, default={})
+
+
+class Briefing(Base):
+    """
+    AI-generated briefings for meetings and events.
+    Contains pre-meeting context and recommendations.
+    """
+    __tablename__ = "briefings"
+    __table_args__ = {"schema": "memory"}
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    entity_id = Column(UUID(as_uuid=True), ForeignKey("dna.entity.id", ondelete="CASCADE"), nullable=False)
+    
+    # Related event
+    event_id = Column(UUID(as_uuid=True), ForeignKey("memory.calendar_events.id", ondelete="CASCADE"), nullable=True)
+    
+    # Briefing content
+    title = Column(String(500), nullable=False)
+    content = Column(Text, nullable=False)
+    
+    # Context sources
+    email_count = Column(Integer, default=0)
+    previous_meetings_count = Column(Integer, default=0)
+    context_sources = Column(JSONB, default={})
+    
+    # Status
+    status = Column(String(50), default="draft")  # draft, generated, sent, viewed
+    
+    # Timestamps
+    generated_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    sent_at = Column(TIMESTAMP(timezone=True), nullable=True)
+    viewed_at = Column(TIMESTAMP(timezone=True), nullable=True)
+    
+    # Metadata
+    meta_data = Column(JSONB, default={})
