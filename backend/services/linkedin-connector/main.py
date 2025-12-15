@@ -94,9 +94,13 @@ async def connect_nats():
     """Connect to NATS server"""
     global nats_client
     if nats_client is None:
-        nats_client = NATS()
-        await nats_client.connect(NATS_URL)
-        logger.info(f"Connected to NATS at {NATS_URL}")
+        try:
+            nats_client = NATS()
+            await nats_client.connect(NATS_URL)
+            logger.info(f"Connected to NATS at {NATS_URL}")
+        except Exception as e:
+            logger.warning(f"Failed to connect to NATS: {e}. Service will continue without NATS.")
+            nats_client = None
 
 
 async def publish_event(event_type: str, entity_id: str, data: Dict[str, Any]):
