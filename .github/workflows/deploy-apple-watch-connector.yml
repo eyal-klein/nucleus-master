@@ -36,7 +36,7 @@ jobs:
           docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.SERVICE_NAME }}:${{ github.sha }}
           docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.SERVICE_NAME }}:latest
       - run: |
-          gcloud run deploy ${{ env.CLOUD_RUN_SERVICE }} \
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
             --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.SERVICE_NAME }}:${{ github.sha }} \
             --region ${{ env.REGION }} --platform managed --allow-unauthenticated \
             --memory 512Mi --cpu 1 --min-instances 0 --max-instances 5 --timeout 300 \
