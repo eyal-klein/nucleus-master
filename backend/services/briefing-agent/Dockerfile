@@ -25,3 +25,4 @@ EXPOSE 8080
 
 # Run the service
 CMD ["python", "main.py"]
+# Trigger rebuild
