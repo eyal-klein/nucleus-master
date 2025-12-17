@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 env:
-  PROJECT_ID: thrive-system1
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   REGION: me-west1
   SERVICE_NAME: calendar-connector
   CLOUD_RUN_SERVICE: ingestion-calendar
