@@ -1,6 +1,6 @@
 """
 NUCLEUS Phase 3 - Gmail Connector Service
-Connects to Gmail API and streams email events to NATS
+Connects to Gmail API and publishes events to Google Cloud Pub/Sub
 """
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks

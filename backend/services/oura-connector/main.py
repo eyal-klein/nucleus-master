@@ -1,6 +1,6 @@
 """
 NUCLEUS Phase 3 - Oura Ring Connector Service
-Connects to Oura API and streams health events to NATS
+Connects to Oura API and publishes events to Google Cloud Pub/Sub
 """
 
 from fastapi import FastAPI, HTTPException
