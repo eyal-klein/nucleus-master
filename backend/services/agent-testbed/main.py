@@ -31,7 +31,7 @@ import sys
 sys.path.insert(0, '/app/shared')
 
 from models.base import get_db
-from models.assembly import AgentDefinition
+from models.assembly import Agent as AgentDefinition
 from models.nucleus_core import TestScenario, TestResult, CorePrinciple
 from llm.gateway import get_llm_gateway
 from pubsub.publisher import get_publisher

@@ -29,7 +29,8 @@ import sys
 sys.path.insert(0, '/app/shared')
 
 from models.base import get_db
-from models.dna import Entity, CommunicationStyle
+from models.dna import Entity
+from models.dna_extended import CommunicationStyle
 from models.nucleus_core import PrivateLanguage, AutonomyLevel
 from llm.gateway import get_llm_gateway
 from pubsub.publisher import get_publisher
