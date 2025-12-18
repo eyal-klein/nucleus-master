@@ -6,3 +6,4 @@ pydantic==2.5.3
 litellm==1.17.9
 google-cloud-pubsub==2.19.0
 python-dotenv==1.0.0
+pgvector==0.2.4
