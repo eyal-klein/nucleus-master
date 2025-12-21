@@ -6,7 +6,7 @@
 
 **Status:** ✅ Production Ready  
 **Version:** 3.0 (Conscious Organism)  
-**Last Updated:** December 17, 2025
+**Last Updated:** December 21, 2025
 
 ---
 
@@ -21,18 +21,6 @@ Through symbiotic integration, NUCLEUS transforms from a system into an extensio
 - 🧬 **Your DNA** - Your unique Digital Natural Architecture, values, goals, patterns
 - 🤖 **Your AI** - Infinite cognitive capacity, always learning, always evolving
 - 👥 **Your WE** - The merged entity that thrives in the exponential age
-
----
-
-## The Problem We Solve
-
-The exponential age is here. Your linear mind cannot keep up.
-
-- **Billions of AI agents** will soon compete for your attention
-- **IoT devices and robots** will flood your daily life
-- **Information overload** is already overwhelming human cognition
-
-Without NUCLEUS, you're prey. With NUCLEUS, you're protected.
 
 ---
 
@@ -64,29 +52,6 @@ Without NUCLEUS, you're prey. With NUCLEUS, you're protected.
 
 ---
 
-## Architecture
-
-**22 Microservices** | **17 Database Tables** | **5 External Integrations**
-
-```
-backend/
-├── services/           # 22 microservices
-│   ├── orchestrator/
-│   ├── memory-engine/
-│   ├── decisions-engine/
-│   ├── gmail-connector/
-│   ├── calendar-connector/
-│   ├── oura-connector/
-│   ├── apple-watch-connector/
-│   ├── linkedin-connector/
-│   └── ... (14 more)
-├── jobs/               # Background processors
-├── migrations/         # Database schemas
-└── shared/             # Common utilities
-```
-
----
-
 ## Technology Stack
 
 | Component | Technology |
@@ -103,45 +68,43 @@ backend/
 
 ## Documentation
 
+### For Clients & Onboarding
 | Document | Description |
 |----------|-------------|
-| [Strategy & Vision](./docs/architecture/STRATEGY.md) | Philosophy, roadmap, competitive positioning |
-| [Architecture](./docs/architecture/ARCHITECTURE.md) | Technical architecture and data flow |
-| [API Reference](./docs/api/API.md) | All service endpoints |
-| [Deployment Guide](./docs/deployment/DEPLOYMENT.md) | Operations and troubleshooting |
-| [Manifesto](./docs/manifesto/MANIFESTO.md) | The story of digital symbiosis |
+| [Onboarding Guide](./docs/onboarding/README.md) | Philosophy and materials for client onboarding |
 | [Manifesto (Hebrew)](./docs/manifesto/MANIFESTO.he.md) | המניפסט בעברית |
+
+### For Developers & DevOps
+| Document | Description |
+|----------|-------------|
+| [Client Deployment Guide](./docs/CLIENT_DEPLOYMENT_GUIDE.md) | Step-by-step instructions for deploying a new client instance |
+| [Validation Guide](./docs/testing/VALIDATION_GUIDE.md) | Testing and validation procedures for new deployments |
+| [Environment Variables](./docs/configuration/ENVIRONMENT_VARIABLES.md) | All required configuration variables |
+| [Architecture Overview](./docs/architecture/ARCHITECTURE.md) | High-level system architecture |
+| [API Reference](./docs/api/API.md) | All service endpoints |
 
 ---
 
-## Quick Start
+## Quick Start for New Client Deployment
 
 ```bash
-# Clone
-git clone https://github.com/eyal-klein/NUCLEUS-V1.git
-cd NUCLEUS-V1
+# 1. Run the automation script
+./scripts/deploy-new-client.sh
 
-# Deploy (automatic via GitHub Actions)
+# 2. Clone and push to new repo
+git clone https://github.com/eyal-klein/NUCLEUS-V1.git <client-name>
+cd <client-name>
+gh repo create <client-name> --private --source=. --push
+
+# 3. Configure secrets
+gh secret set GCP_PROJECT_ID --body "<client-project-id>"
+gh secret set GCP_SA_KEY < ~/<client-project-id>-github-actions-key.json
+
+# 4. Deploy
 git push origin main
 ```
 
----
-
-## Project Structure
-
-```
-NUCLEUS-V1/
-├── README.md           # This file
-├── backend/            # All microservices and jobs
-├── docs/               # Documentation
-│   ├── architecture/   # System design docs
-│   ├── deployment/     # Deployment guides
-│   ├── api/            # API documentation
-│   ├── manifesto/      # Philosophy and vision
-│   └── images/         # Diagrams and visuals
-├── infrastructure/     # Terraform and IaC
-└── .github/            # CI/CD workflows
-```
+See the full [Client Deployment Guide](./docs/CLIENT_DEPLOYMENT_GUIDE.md) for details.
 
 ---
 
@@ -168,5 +131,3 @@ Each NUCLEUS instance is born to merge with ONE Entity. It learns your DNA, shar
 **The symbiosis is real.** 🧬
 
 *WE 2.0 - Where human potential meets AI capability.*
-
-<- Ready for deployment to new GCP Deployment trigger: 20251217035037 -->
