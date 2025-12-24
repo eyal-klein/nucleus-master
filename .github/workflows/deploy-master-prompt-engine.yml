@@ -1,0 +1,73 @@
+name: Deploy Master Prompt Engine Job
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/jobs/master-prompt-engine/**'
+      - 'backend/shared/**'
+      - '.github/workflows/deploy-master-prompt-engine.yml'
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: me-west1
+  JOB_NAME: master-prompt-engine
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+      
+      - name: Configure Docker for GCR
+        run: |
+          gcloud auth configure-docker gcr.io
+      
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f backend/jobs/master-prompt-engine/Dockerfile \
+            -t gcr.io/${{ env.PROJECT_ID }}/${{ env.JOB_NAME }}:${{ github.sha }} \
+            -t gcr.io/${{ env.PROJECT_ID }}/${{ env.JOB_NAME }}:latest \
+            .
+      
+      - name: Push Docker image
+        run: |
+          docker push gcr.io/${{ env.PROJECT_ID }}/${{ env.JOB_NAME }}:${{ github.sha }}
+          docker push gcr.io/${{ env.PROJECT_ID }}/${{ env.JOB_NAME }}:latest
+      
+      - name: Deploy to Cloud Run Job
+        run: |
+          gcloud run jobs deploy ${{ env.JOB_NAME }} \
+            --image gcr.io/${{ env.PROJECT_ID }}/${{ env.JOB_NAME }}:latest \
+            --region ${{ env.REGION }} \
+            --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            --set-env-vars OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+            --set-env-vars PROJECT_ID=${{ env.PROJECT_ID }} \
+            --service-account admin-master@${{ env.PROJECT_ID }}.iam.gserviceaccount.com \
+            --max-retries 1 \
+            --task-timeout 10m \
+            --memory 512Mi \
+            --cpu 1
+      
+      - name: Deployment Summary
+        run: |
+          echo "✅ Master Prompt Engine deployed successfully!"
+          echo "Job: ${{ env.JOB_NAME }}"
+          echo "Region: ${{ env.REGION }}"
+          echo "Image: gcr.io/${{ env.PROJECT_ID }}/${{ env.JOB_NAME }}:${{ github.sha }}"

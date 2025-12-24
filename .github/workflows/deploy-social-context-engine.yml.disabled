@@ -1,0 +1,68 @@
+name: Deploy Social Context Engine Service
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/services/social-context-engine/**'
+      - 'backend/shared/**'
+      - '.github/workflows/deploy-social-context-engine.yml'
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: thrive-system1
+  REGION: us-central1
+  SERVICE_NAME: social-context-engine
+  CLOUD_RUN_SERVICE: analysis-social-context
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+      
+      - name: Configure Docker for GCR
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+      
+      - name: Build Docker image
+        run: |
+          docker build -f backend/services/${{ env.SERVICE_NAME }}/Dockerfile \
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.SERVICE_NAME }}:latest \
+            .
+      
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.SERVICE_NAME }}:${{ github.sha }}
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.SERVICE_NAME }}:latest
+      
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.CLOUD_RUN_SERVICE }} \
+            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            --memory 1Gi \
+            --cpu 2 \
+            --min-instances 0 \
+            --max-instances 5 \
+            --timeout 300 \
+            --labels project=nucleus,environment=production,managed-by=github-actions,phase=phase3,layer=analysis,week=week3,component=social

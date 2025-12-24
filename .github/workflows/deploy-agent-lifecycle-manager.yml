@@ -1,0 +1,76 @@
+name: Deploy Agent Lifecycle Manager Job
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/jobs/agent-lifecycle-manager/**'
+      - 'backend/shared/**'
+      - '.github/workflows/deploy-agent-lifecycle-manager.yml'
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: me-west1
+  JOB_NAME: agent-lifecycle-manager
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+      
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+      
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f backend/jobs/agent-lifecycle-manager/Dockerfile \
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/agent-lifecycle-manager:${{ github.sha }} \
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/agent-lifecycle-manager:latest \
+            .
+      
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/agent-lifecycle-manager:${{ github.sha }}
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/agent-lifecycle-manager:latest
+      
+      - name: Deploy to Cloud Run Job
+        run: |
+          gcloud run jobs deploy ${{ env.JOB_NAME }} \
+            --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/agent-lifecycle-manager:${{ github.sha }} \
+            --region=${{ env.REGION }} \
+            --set-env-vars="DATABASE_URL=${{ secrets.DATABASE_URL }}" \
+            --set-env-vars="OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" \
+            --set-env-vars="SHUTDOWN_THRESHOLD=0.3" \
+            --set-env-vars="IMPROVE_THRESHOLD=0.6" \
+            --set-env-vars="SPLIT_THRESHOLD=0.85" \
+            --set-env-vars="CRITICAL_RISK_ACTION=shutdown" \
+            --max-retries=3 \
+            --task-timeout=30m \
+            --memory=1Gi \
+            --cpu=1 \
+            --service-account=${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+      
+      - name: Job deployment complete
+        run: |
+          echo "✅ Agent Lifecycle Manager job deployed successfully"
+          echo "Job name: ${{ env.JOB_NAME }}"
+          echo "Region: ${{ env.REGION }}"
+          echo "Image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/agent-lifecycle-manager:${{ github.sha }}"

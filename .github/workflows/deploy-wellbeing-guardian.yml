@@ -1,0 +1,44 @@
+name: Deploy Wellbeing-Guardian
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/services/wellbeing-guardian/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - run: gcloud auth configure-docker me-west1-docker.pkg.dev
+
+      - name: Build and Push
+        run: |
+          docker build -t me-west1-docker.pkg.dev/nucleus-master/nucleus-repo/wellbeing-guardian:${{ github.sha }} -f backend/services/wellbeing-guardian/Dockerfile .
+          docker push me-west1-docker.pkg.dev/nucleus-master/nucleus-repo/wellbeing-guardian:${{ github.sha }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy wellbeing-guardian \
+            --image me-west1-docker.pkg.dev/nucleus-master/nucleus-repo/wellbeing-guardian:${{ github.sha }} \
+            --region me-west1 \
+            --platform managed \
+            --set-env-vars "GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }},PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}" \
+            --service-account nucleus-sa@nucleus-master.iam.gserviceaccount.com \
+            --add-cloudsql-instances nucleus-master:me-west1:nucleus-postgres \
+            --set-secrets DATABASE_URL=DATABASE_URL:latest \
+            --allow-unauthenticated

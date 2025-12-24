@@ -1,0 +1,64 @@
+name: Schedule Agent Lifecycle Manager Job
+
+on:
+  workflow_dispatch:
+    inputs:
+      schedule:
+        description: 'Cron schedule (default: daily at 3 AM UTC)'
+        required: false
+        default: '0 3 * * *'
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: me-west1
+  JOB_NAME: agent-lifecycle-manager
+  SCHEDULER_NAME: agent-lifecycle-manager-daily
+
+jobs:
+  schedule:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+      
+      - name: Create or update Cloud Scheduler job
+        run: |
+          # Check if scheduler exists
+          if gcloud scheduler jobs describe ${{ env.SCHEDULER_NAME }} --location=${{ env.REGION }} 2>/dev/null; then
+            echo "Updating existing scheduler..."
+            gcloud scheduler jobs update http ${{ env.SCHEDULER_NAME }} \
+              --location=${{ env.REGION }} \
+              --schedule="${{ github.event.inputs.schedule || '0 3 * * *' }}" \
+              --uri="https://${{ env.REGION }}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${{ env.PROJECT_ID }}/jobs/${{ env.JOB_NAME }}:run" \
+              --http-method=POST \
+              --oauth-service-account-email=${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }} \
+              --time-zone="UTC"
+          else
+            echo "Creating new scheduler..."
+            gcloud scheduler jobs create http ${{ env.SCHEDULER_NAME }} \
+              --location=${{ env.REGION }} \
+              --schedule="${{ github.event.inputs.schedule || '0 3 * * *' }}" \
+              --uri="https://${{ env.REGION }}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${{ env.PROJECT_ID }}/jobs/${{ env.JOB_NAME }}:run" \
+              --http-method=POST \
+              --oauth-service-account-email=${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }} \
+              --time-zone="UTC" \
+              --description="Daily execution of Agent Lifecycle Manager"
+          fi
+      
+      - name: Scheduler setup complete
+        run: |
+          echo "✅ Agent Lifecycle Manager scheduler configured"
+          echo "Schedule: ${{ github.event.inputs.schedule || '0 3 * * *' }} (UTC)"
+          echo "Scheduler name: ${{ env.SCHEDULER_NAME }}"
+          echo "Job name: ${{ env.JOB_NAME }}"
+          echo "Region: ${{ env.REGION }}"

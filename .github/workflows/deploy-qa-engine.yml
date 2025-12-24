@@ -1,0 +1,67 @@
+name: Deploy Qa Engine Job
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/jobs/qa-engine/**'
+      - 'backend/shared/**'
+      - '.github/workflows/deploy-qa-engine.yml'
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: me-west1
+  JOB_NAME: nucleus-qa-engine
+
+jobs:
+  deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+      
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+      
+      - name: Build Docker image
+        run: |
+          docker build --no-cache -f backend/jobs/qa-engine/Dockerfile \
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:${{ github.sha }} \
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:latest \
+            .
+      
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:${{ github.sha }}
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:latest
+      
+      - name: Deploy to Cloud Run Jobs
+        run: |
+          if gcloud run jobs describe ${{ env.JOB_NAME }} --region=${{ env.REGION }} 2>/dev/null; then
+            gcloud run jobs update ${{ env.JOB_NAME }} \
+              --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:${{ github.sha }} \
+              --region=${{ env.REGION }}
+          else
+            gcloud run jobs create ${{ env.JOB_NAME }} \
+              --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:${{ github.sha }} \
+              --region=${{ env.REGION }} \
+              --max-retries=3 \
+              --task-timeout=30m
+          fi
+      
+      - name: Verify deployment
+        run: |
+          gcloud run jobs describe ${{ env.JOB_NAME }} --region=${{ env.REGION }}

@@ -1,0 +1,82 @@
+name: Deploy Micro Prompts Job
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/jobs/micro-prompts/**'
+      - 'backend/shared/**'
+      - '.github/workflows/deploy-micro-prompts.yml'
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: me-west1
+  JOB_NAME: nucleus-micro-prompts
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+      
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+      
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f backend/jobs/micro-prompts/Dockerfile \
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:${{ github.sha }} \
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:latest \
+            .
+      
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:${{ github.sha }}
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:latest
+      
+      - name: Deploy Cloud Run Job
+        run: |
+          gcloud run jobs update ${{ env.JOB_NAME }} \
+            --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:${{ github.sha }} \
+            --region=${{ env.REGION }} \
+            --set-env-vars="PROJECT_ID=${{ env.PROJECT_ID }}" \
+            --set-secrets="DATABASE_URL=nucleus-postgres-url:latest" \
+            --cpu=1 \
+            --memory=1Gi \
+            --max-retries=3 \
+            --task-timeout=1800 \
+            --service-account=nucleus-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com \
+            || \
+          gcloud run jobs create ${{ env.JOB_NAME }} \
+            --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:${{ github.sha }} \
+            --region=${{ env.REGION }} \
+            --set-env-vars="PROJECT_ID=${{ env.PROJECT_ID }}" \
+            --set-secrets="DATABASE_URL=nucleus-postgres-url:latest" \
+            --cpu=1 \
+            --memory=1Gi \
+            --max-retries=3 \
+            --task-timeout=1800 \
+            --service-account=nucleus-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com
+      
+      - name: Verify job
+        run: |
+          gcloud run jobs describe ${{ env.JOB_NAME }} --region=${{ env.REGION }}
+          echo "Job deployed successfully!"

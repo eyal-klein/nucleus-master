@@ -1,0 +1,60 @@
+name: Schedule DNA Engine Job
+
+on:
+  workflow_dispatch:  # Manual trigger to set up scheduler
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: me-west1
+  JOB_NAME: nucleus-dna-engine
+  SCHEDULER_NAME: nucleus-dna-engine-nightly
+
+jobs:
+  setup-scheduler:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+      
+      - name: Create or Update Cloud Scheduler Job
+        run: |
+          # Check if scheduler exists
+          if gcloud scheduler jobs describe ${{ env.SCHEDULER_NAME }} --location=${{ env.REGION }} 2>/dev/null; then
+            echo "Scheduler exists, updating..."
+            gcloud scheduler jobs update http ${{ env.SCHEDULER_NAME }} \
+              --location=${{ env.REGION }} \
+              --schedule="0 2 * * *" \
+              --time-zone="UTC" \
+              --uri="https://${{ env.REGION }}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${{ env.PROJECT_ID }}/jobs/${{ env.JOB_NAME }}:run" \
+              --http-method=POST \
+              --oauth-service-account-email=nucleus-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com
+          else
+            echo "Scheduler does not exist, creating..."
+            gcloud scheduler jobs create http ${{ env.SCHEDULER_NAME }} \
+              --location=${{ env.REGION }} \
+              --schedule="0 2 * * *" \
+              --time-zone="UTC" \
+              --uri="https://${{ env.REGION }}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${{ env.PROJECT_ID }}/jobs/${{ env.JOB_NAME }}:run" \
+              --http-method=POST \
+              --oauth-service-account-email=nucleus-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com \
+              --description="Nightly DNA Engine distillation job - runs at 2 AM UTC"
+          fi
+      
+      - name: Verify Scheduler
+        run: |
+          gcloud scheduler jobs describe ${{ env.SCHEDULER_NAME }} --location=${{ env.REGION }}
+          echo "Scheduler configured successfully!"
+          echo "DNA Engine will run nightly at 2 AM UTC (4 AM Israel time)"
