@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { NucleusLogo } from "@/components/ui/NucleusLogo";
 
 export function Footer() {
   return (
@@ -11,11 +12,9 @@ export function Footer() {
           
           {/* Brand Column */}
           <div className="text-center md:text-left space-y-6">
-            <img 
-              src="/images/nucleus_logo_final_clean.png" 
-              alt="NUCLEUS" 
-              className="h-16 w-auto mx-auto md:mx-0 opacity-80 grayscale hover:grayscale-0 transition-all duration-700"
-            />
+            <div className="flex justify-center md:justify-start">
+              <NucleusLogo className="scale-125 opacity-80 grayscale hover:grayscale-0 transition-all duration-700" />
+            </div>
             <p className="text-xs tracking-[0.3em] text-nucleus-cyan uppercase font-medium">
               WE 2.0 AT MAXIMUM THRIVE
             </p>
